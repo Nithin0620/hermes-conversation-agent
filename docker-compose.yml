@@ -1,0 +1,61 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg15
+    environment:
+      POSTGRES_USER: chatwoot
+      POSTGRES_PASSWORD: chatwoot
+      POSTGRES_DB: chatwoot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+
+  chatwoot:
+    build:
+      context: ./chatwoot
+    command: bundle exec rails server -b 0.0.0.0 -p 3000
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USERNAME: chatwoot
+      POSTGRES_PASSWORD: chatwoot
+      POSTGRES_DATABASE: chatwoot
+      REDIS_URL: redis://redis:6379
+      RAILS_ENV: production
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      FRONTEND_URL: https://despair-siberian-unwarlike.ngrok-free.dev
+      RAILS_SERVE_STATIC_FILES: "true"
+      INSTALLATION_ENV: docker
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+
+  chatwoot-worker:
+    build:
+      context: ./chatwoot
+    command: bundle exec sidekiq
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USERNAME: Nithin
+      POSTGRES_PASSWORD: n/12344321
+      POSTGRES_DATABASE: postgresql://Nithin:n%2F12344321@34.93.127.33:5432/chatwoot
+      REDIS_URL: redis://redis:6379
+      RAILS_ENV: production
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      FRONTEND_URL: https://despair-siberian-unwarlike.ngrok-free.dev
+      RAILS_SERVE_STATIC_FILES: "true"
+      INSTALLATION_ENV: docker
+    depends_on:
+      - postgres
+      - redis
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "5000:5000"
+
+volumes:
+  postgres_data:
