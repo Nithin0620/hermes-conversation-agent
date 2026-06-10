@@ -230,7 +230,7 @@ def test_run_never_raises_when_store_raises(conversation_id, user_message, accou
 
 # Import the function under test (DB call will be mocked)
 import json  # noqa: E402 (already imported above via hypothesis; re-stated for clarity)
-from tools.property_tools import search_properties, get_property_details  # noqa: E402
+from real_estate_tools.property_tools import search_properties, get_property_details  # noqa: E402
 
 # Strategy: any integer that could be passed as limit (including out-of-range values)
 limit_st = st.integers(min_value=-(2**31), max_value=2**31 - 1)
@@ -289,7 +289,7 @@ def test_search_properties_limit_clamping(limit):
 # Property 8 — assign_chatwoot_labels label count cap
 # ---------------------------------------------------------------------------
 
-from tools.crm_tools import assign_chatwoot_labels  # noqa: E402
+from real_estate_tools.crm_tools import assign_chatwoot_labels  # noqa: E402
 
 # Strategy: labels list of any size (0 to 20 items)
 label_st = st.text(
@@ -468,12 +468,12 @@ def test_search_properties_structural_invariant(
 # return None, never return a raw dict.
 # ---------------------------------------------------------------------------
 
-from tools.crm_tools import (  # noqa: E402
+from real_estate_tools.crm_tools import (  # noqa: E402
     assign_chatwoot_labels,
     create_lead,
     update_lead_stage,
 )
-from tools.followup_tools import schedule_followup  # noqa: E402
+from real_estate_tools.followup_tools import schedule_followup  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Common strategies for tool arguments
@@ -922,7 +922,7 @@ def test_schedule_followup_always_returns_json_on_success(
 # Property 9 — Lead stage validation
 # ---------------------------------------------------------------------------
 
-from tools.crm_tools import update_lead_stage, VALID_STAGES  # noqa: E402
+from real_estate_tools.crm_tools import update_lead_stage, VALID_STAGES  # noqa: E402
 
 # Strategies
 # Valid stages: drawn from the known-good set
@@ -1093,7 +1093,7 @@ def test_update_lead_stage_invalid_returns_error_no_db_call(conversation_id, sta
 # ---------------------------------------------------------------------------
 
 from datetime import datetime, timezone, timedelta  # noqa: E402
-from tools.followup_tools import schedule_followup  # noqa: E402
+from real_estate_tools.followup_tools import schedule_followup  # noqa: E402
 
 # Strategy: any integer that could be passed as delay_hours (including extreme values)
 delay_hours_st = st.integers(min_value=-(2**31), max_value=2**31 - 1)

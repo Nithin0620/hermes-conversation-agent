@@ -39,9 +39,9 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # Imports — tool functions
 # ---------------------------------------------------------------------------
-from tools.property_tools import search_properties, get_property_details  # noqa: E402
-from tools.crm_tools import assign_chatwoot_labels, update_lead_stage, create_lead  # noqa: E402
-from tools.followup_tools import schedule_followup  # noqa: E402
+from real_estate_tools.property_tools import search_properties, get_property_details  # noqa: E402
+from real_estate_tools.crm_tools import assign_chatwoot_labels, update_lead_stage, create_lead  # noqa: E402
+from real_estate_tools.followup_tools import schedule_followup  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Test harness
