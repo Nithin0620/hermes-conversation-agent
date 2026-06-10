@@ -2,9 +2,9 @@ services:
   postgres:
     image: pgvector/pgvector:pg15
     environment:
-      POSTGRES_USER: chatwoot
-      POSTGRES_PASSWORD: chatwoot
-      POSTGRES_DB: chatwoot
+      POSTGRES_USER: Nithin
+      POSTGRES_PASSWORD: n/12344321
+      POSTGRES_DB: postgresql://Nithin:n%2F12344321@34.93.127.33:5432/chatwoot
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -17,9 +17,9 @@ services:
     command: bundle exec rails server -b 0.0.0.0 -p 3000
     environment:
       POSTGRES_HOST: postgres
-      POSTGRES_USERNAME: chatwoot
-      POSTGRES_PASSWORD: chatwoot
-      POSTGRES_DATABASE: chatwoot
+      POSTGRES_USERNAME: Nithin
+      POSTGRES_PASSWORD: n/12344321
+      POSTGRES_DATABASE: postgresql://Nithin:n%2F12344321@34.93.127.33:5432/chatwoot
       REDIS_URL: redis://redis:6379
       RAILS_ENV: production
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
