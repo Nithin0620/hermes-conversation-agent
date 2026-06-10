@@ -28,7 +28,7 @@ class ChatwootClient:
     def set_conversation_labels(self, account_id, conversation_id, labels):
         url = f"{self.api_url}/api/v1/accounts/{account_id}/conversations/{conversation_id}/labels"
         body = {"labels": labels}
-        resp = requests.put(url, headers=self._headers, json=body)
+        resp = requests.post(url, headers=self._headers, json=body)
         print(f"[Chatwoot] Labels set ({labels}): {resp.status_code}")
         return resp
 
@@ -36,7 +36,7 @@ class ChatwootClient:
         url = f"{self.api_url}/api/v1/accounts/{account_id}/labels"
         resp = requests.get(url, headers=self._headers)
         if resp.ok:
-            return [l["title"] for l in resp.json().get("payload", [])]
+            return [(l["title"], l["id"]) for l in resp.json().get("payload", [])]
         return []
 
     def create_label(self, account_id, title, color="#00FF00", description=""):
@@ -45,7 +45,14 @@ class ChatwootClient:
             "title": title,
             "color": color,
             "description": description,
+            "show_on_sidebar": True,
         }
         resp = requests.post(url, headers=self._headers, json=body)
         print(f"[Chatwoot] Label created ({title}): {resp.status_code}")
+        return resp
+
+    def update_label(self, account_id, label_id, **kwargs):
+        url = f"{self.api_url}/api/v1/accounts/{account_id}/labels/{label_id}"
+        resp = requests.put(url, headers=self._headers, json=kwargs)
+        print(f"[Chatwoot] Label updated ({label_id}): {resp.status_code}")
         return resp

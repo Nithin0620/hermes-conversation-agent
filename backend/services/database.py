@@ -123,6 +123,18 @@ class DatabaseService:
         except ValueError:
             return None
 
+    def _fmt_date(self, val):
+        if hasattr(val, 'strftime'):
+            return val.strftime('%d %b %Y %I:%M %p')
+        if isinstance(val, str):
+            try:
+                from datetime import datetime
+                dt = datetime.fromisoformat(val.replace('Z', '+00:00'))
+                return dt.strftime('%d %b %Y %I:%M %p')
+            except (ValueError, TypeError):
+                return val
+        return val
+
     def format_auction_brief(self, row):
         parts = []
         parts.append(f"*{row.get('asset_type', 'Property')}*")
@@ -130,8 +142,9 @@ class DatabaseService:
             parts.append(f"📍 {row['city']}")
         if row.get("reserve_price"):
             parts.append(f"💰 {row['reserve_price']}")
-        if row.get("auction_date_time") and hasattr(row['auction_date_time'], 'strftime'):
-            parts.append(f"📅 Auction: {row['auction_date_time'].strftime('%d %b %Y %I:%M %p')}")
+        dt = row.get("auction_date_time")
+        if dt:
+            parts.append(f"📅 Auction: {self._fmt_date(dt)}")
         if row.get("institution"):
             parts.append(f"🏦 {row['institution']}")
         if row.get("asset_category"):
@@ -143,8 +156,21 @@ class DatabaseService:
         for key, label in COLUMN_LABELS.items():
             val = row.get(key)
             if val is not None and val != "":
-                if hasattr(val, 'strftime'):
-                    lines.append(f"{label}: {val.strftime('%d %b %Y %I:%M %p')}")
-                else:
-                    lines.append(f"{label}: {val}")
+                lines.append(f"{label}: {self._fmt_date(val)}")
         return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Singleton helpers — used by tool modules to avoid multiple connections
+# per worker process (Requirement 5.3).
+# ---------------------------------------------------------------------------
+
+_shared_db: DatabaseService | None = None
+
+
+def _get_shared_db() -> DatabaseService:
+    """Return the process-level shared DatabaseService, creating it on first call."""
+    global _shared_db
+    if _shared_db is None:
+        _shared_db = DatabaseService()
+    return _shared_db
