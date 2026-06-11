@@ -10,29 +10,52 @@ Registered tools:
     Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 8.1, 8.2
     """
 
+import json
+import logging
 
-def search_properties(
-    city: str | None = None,
-    asset_type: str | None = None,
-    asset_category: str | None = None,
-    institution: str | None = None,
-    min_price: str | None = None,
-    max_price: str | None = None,
-    limit: str | None = None,
-    offset: str | None = None,
-    **kwargs,
-) -> str:
-    # Coerce types: Groq sometimes passes strings for numeric params
-    if isinstance(limit, str):
-        limit = int(limit)
-    if isinstance(offset, str):
-        offset = int(offset)
-    if isinstance(min_price, str):
-        min_price = float(min_price)
-    if isinstance(max_price, str):
-        max_price = float(max_price)
-    # Clamp limit to [1, 10] — Requirements 2.2, 2.3
-    limit = max(1, min(limit, 10))
+logger = logging.getLogger(__name__)
+
+
+def search_properties(args: dict, **kwargs) -> str:
+    city = args.get("city")
+    asset_type = args.get("asset_type")
+    asset_category = args.get("asset_category")
+    institution = args.get("institution")
+    min_price = args.get("min_price")
+    max_price = args.get("max_price")
+    limit = args.get("limit")
+    offset = args.get("offset")
+
+    if limit is None or (isinstance(limit, str) and not limit.strip()):
+        limit = None
+    elif isinstance(limit, str):
+        try:
+            limit = int(limit)
+        except ValueError:
+            limit = None
+    if offset is None or (isinstance(offset, str) and not offset.strip()):
+        offset = None
+    elif isinstance(offset, str):
+        try:
+            offset = int(offset)
+        except ValueError:
+            offset = None
+    if min_price is None or (isinstance(min_price, str) and not min_price.strip()):
+        min_price = None
+    elif isinstance(min_price, str):
+        try:
+            min_price = float(min_price)
+        except ValueError:
+            min_price = None
+    if max_price is None or (isinstance(max_price, str) and not max_price.strip()):
+        max_price = None
+    elif isinstance(max_price, str):
+        try:
+            max_price = float(max_price)
+        except ValueError:
+            max_price = None
+    if limit is None:
+        limit = 5
 
     try:
         # Late import to avoid circular dependencies at module load time
@@ -81,9 +104,8 @@ def search_properties(
         return json.dumps({"error": str(exc)})
 
 
-def get_property_details(listing_id: str, **kwargs) -> str:
-    """
-    Fetch full details for a single auction listing by listing_id.
+def get_property_details(args: dict, **kwargs) -> str:
+    """Fetch full details for a single auction listing by listing_id.
 
     Preconditions:
       - listing_id is a non-empty string.
@@ -95,6 +117,7 @@ def get_property_details(listing_id: str, **kwargs) -> str:
 
     Requirements: 2.5, 2.6, 2.7, 8.1, 8.2
     """
+    listing_id = args.get("listing_id")
     try:
         # Late imports to avoid circular dependencies at module load time
         from services.database import _get_shared_db, TABLE  # noqa: PLC0415

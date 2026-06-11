@@ -27,12 +27,7 @@ VALID_STAGES = {"new_lead", "qualified_lead", "hot_lead", "warm_lead", "cold_lea
 # ---------------------------------------------------------------------------
 
 
-def assign_chatwoot_labels(
-    account_id: int,
-    conversation_id: str,
-    labels: list | None = None,
-    **kwargs,
-) -> str:
+def assign_chatwoot_labels(args: dict, **kwargs) -> str:
     """Assign CRM classification labels to a Chatwoot conversation.
 
     ``conversation_id`` is coerced to ``str`` because Groq sometimes passes it as integer.
@@ -53,6 +48,9 @@ def assign_chatwoot_labels(
       - Labels not yet present in the account are created first
       - Returns a valid JSON string; never raises
     """
+    account_id = args.get("account_id")
+    conversation_id = args.get("conversation_id")
+    labels = args.get("labels")
     conversation_id = str(conversation_id)
     try:
         from services.chatwoot import ChatwootClient  # late import – avoids circular deps
@@ -84,16 +82,7 @@ def assign_chatwoot_labels(
         return json.dumps({"error": str(exc)})
 
 
-def create_lead(
-    account_id: int,
-    conversation_id: str,
-    name: str | None = None,
-    phone: str | None = None,
-    intent: str | None = None,
-    city: str | None = None,
-    budget: str | None = None,
-    **kwargs,
-) -> str:
+def create_lead(args: dict, **kwargs) -> str:
     """Record or update a lead in the hermes_leads table.
 
     Uses an upsert so that calling this tool a second time for the same
@@ -112,6 +101,13 @@ def create_lead(
       - A row exists in hermes_leads for conversation_id
       - Returns a valid JSON string; never raises
     """
+    account_id = args.get("account_id")
+    conversation_id = args.get("conversation_id")
+    name = args.get("name")
+    phone = args.get("phone")
+    intent = args.get("intent")
+    city = args.get("city")
+    budget = args.get("budget")
     conversation_id = str(conversation_id)
     try:
         from services.state_store import _get_shared_store  # late import
@@ -134,12 +130,7 @@ def create_lead(
         return json.dumps({"error": str(exc)})
 
 
-def update_lead_stage(
-    conversation_id: str,
-    stage: str,
-    notes: str | None = None,
-    **kwargs,
-) -> str:
+def update_lead_stage(args: dict, **kwargs) -> str:
     """Update the CRM stage of an existing lead.
 
     Stage validation is performed BEFORE any database call (requirement 3.7).
@@ -156,6 +147,9 @@ def update_lead_stage(
       - hermes_leads row updated when stage is valid
       - Returns a valid JSON string; never raises
     """
+    conversation_id = args.get("conversation_id")
+    stage = args.get("stage")
+    notes = args.get("notes")
     conversation_id = str(conversation_id)
     # Validate stage FIRST — before touching the database (requirement 3.7)
     if stage not in VALID_STAGES:
