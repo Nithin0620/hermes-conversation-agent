@@ -7,18 +7,8 @@ Registered tools:
   - search_properties   (toolset: real_estate)
   - get_property_details (toolset: real_estate)
 
-Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 8.1, 8.2
-"""
-
-import json
-import logging
-
-logger = logging.getLogger(__name__)
-
-
-# ---------------------------------------------------------------------------
-# Tool handlers
-# ---------------------------------------------------------------------------
+    Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 8.1, 8.2
+    """
 
 
 def search_properties(
@@ -26,26 +16,21 @@ def search_properties(
     asset_type: str | None = None,
     asset_category: str | None = None,
     institution: str | None = None,
-    min_price: float | None = None,
-    max_price: float | None = None,
-    limit: int = 5,
-    offset: int = 0,
+    min_price: str | None = None,
+    max_price: str | None = None,
+    limit: str | None = None,
+    offset: str | None = None,
+    **kwargs,
 ) -> str:
-    """
-    Search the bank auction property database.
-
-    Preconditions:
-      - All parameters are optional; omitted/None values are ignored as filters.
-      - limit will be clamped to [1, 10].
-      - offset must be non-negative (passed through as-is).
-
-    Postconditions:
-      - Returns a valid JSON string with keys: results, total, offset, limit.
-      - asset_details, asset_schedule, and asset_address are truncated to 200 chars.
-      - On any exception: returns JSON with an "error" key; never raises.
-
-    Requirements: 2.1, 2.2, 2.3, 2.4, 2.7, 2.8, 8.1, 8.2
-    """
+    # Coerce types: Groq sometimes passes strings for numeric params
+    if isinstance(limit, str):
+        limit = int(limit)
+    if isinstance(offset, str):
+        offset = int(offset)
+    if isinstance(min_price, str):
+        min_price = float(min_price)
+    if isinstance(max_price, str):
+        max_price = float(max_price)
     # Clamp limit to [1, 10] — Requirements 2.2, 2.3
     limit = max(1, min(limit, 10))
 
@@ -96,7 +81,7 @@ def search_properties(
         return json.dumps({"error": str(exc)})
 
 
-def get_property_details(listing_id: str) -> str:
+def get_property_details(listing_id: str, **kwargs) -> str:
     """
     Fetch full details for a single auction listing by listing_id.
 
@@ -172,22 +157,20 @@ SEARCH_PROPERTIES_SCHEMA = {
                 "description": "Bank name, partial match",
             },
             "min_price": {
-                "type": "number",
+                "type": "string",
                 "description": "Minimum reserve price in INR",
             },
             "max_price": {
-                "type": "number",
+                "type": "string",
                 "description": "Maximum reserve price in INR",
             },
             "limit": {
-                "type": "integer",
+                "type": "string",
                 "description": "Results per page (default 5, max 10)",
-                "default": 5,
             },
             "offset": {
-                "type": "integer",
+                "type": "string",
                 "description": "Pagination offset",
-                "default": 0,
             },
         },
         "required": [],

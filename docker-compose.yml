@@ -60,6 +60,8 @@ services:
       - ./backend/.env
     ports:
       - "5000:5000"
+    volumes:
+      - ./.cursor:/app/.cursor
 
   followup-worker:
     build:

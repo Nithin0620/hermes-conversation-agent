@@ -30,9 +30,12 @@ VALID_STAGES = {"new_lead", "qualified_lead", "hot_lead", "warm_lead", "cold_lea
 def assign_chatwoot_labels(
     account_id: int,
     conversation_id: str,
-    labels: list,
+    labels: list | None = None,
+    **kwargs,
 ) -> str:
     """Assign CRM classification labels to a Chatwoot conversation.
+
+    ``conversation_id`` is coerced to ``str`` because Groq sometimes passes it as integer.
 
     Creates any labels that do not yet exist in the account, then sets the
     conversation labels (capped at 6).
@@ -50,6 +53,7 @@ def assign_chatwoot_labels(
       - Labels not yet present in the account are created first
       - Returns a valid JSON string; never raises
     """
+    conversation_id = str(conversation_id)
     try:
         from services.chatwoot import ChatwootClient  # late import – avoids circular deps
 
@@ -88,6 +92,7 @@ def create_lead(
     intent: str | None = None,
     city: str | None = None,
     budget: str | None = None,
+    **kwargs,
 ) -> str:
     """Record or update a lead in the hermes_leads table.
 
@@ -107,6 +112,7 @@ def create_lead(
       - A row exists in hermes_leads for conversation_id
       - Returns a valid JSON string; never raises
     """
+    conversation_id = str(conversation_id)
     try:
         from services.state_store import _get_shared_store  # late import
 
@@ -132,6 +138,7 @@ def update_lead_stage(
     conversation_id: str,
     stage: str,
     notes: str | None = None,
+    **kwargs,
 ) -> str:
     """Update the CRM stage of an existing lead.
 
@@ -149,6 +156,7 @@ def update_lead_stage(
       - hermes_leads row updated when stage is valid
       - Returns a valid JSON string; never raises
     """
+    conversation_id = str(conversation_id)
     # Validate stage FIRST — before touching the database (requirement 3.7)
     if stage not in VALID_STAGES:
         sorted_stages = ", ".join(sorted(VALID_STAGES))
@@ -187,7 +195,7 @@ ASSIGN_CHATWOOT_LABELS_SCHEMA = {
         "type": "object",
         "properties": {
             "account_id":      {"type": "integer", "description": "Chatwoot account ID"},
-            "conversation_id": {"type": "string",  "description": "Chatwoot conversation ID"},
+            "conversation_id": {"type": "number",  "description": "Chatwoot conversation ID"},
             "labels": {
                 "type": "array",
                 "items": {"type": "string"},
@@ -207,7 +215,7 @@ CREATE_LEAD_SCHEMA = {
         "type": "object",
         "properties": {
             "account_id":      {"type": "integer", "description": "Chatwoot account ID"},
-            "conversation_id": {"type": "string",  "description": "Chatwoot conversation ID"},
+            "conversation_id": {"type": "number",  "description": "Chatwoot conversation ID"},
             "name":   {"type": "string", "description": "User name"},
             "phone":  {"type": "string", "description": "User phone"},
             "intent": {"type": "string", "description": "User intent"},
@@ -224,7 +232,7 @@ UPDATE_LEAD_STAGE_SCHEMA = {
     "parameters": {
         "type": "object",
         "properties": {
-            "conversation_id": {"type": "string", "description": "Chatwoot conversation ID"},
+            "conversation_id": {"type": "number", "description": "Chatwoot conversation ID"},
             "stage": {
                 "type": "string",
                 "enum": ["new_lead", "qualified_lead", "hot_lead", "warm_lead", "cold_lead"],
